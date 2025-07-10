@@ -1,8 +1,18 @@
-from django.http import HttpResponse
 from django.shortcuts import render
+from .models import Room
+
+# rooms = [
+#     {'id': 1, 'name': 'Learn Python'},
+#     {'id': 2, 'name': 'Frontend Developer'},
+#     {'id': 3, 'name': 'Design with me'}
+# ]
 
 def home(request):
-    return HttpResponse("Welcome to the Study Django App!")
+    rooms = Room.objects.all()
+    context = {'rooms': rooms}
+    return render(request, 'studyapp/home.html', context)
 
-def room(request):
-    return HttpResponse("This is the room page.")
+def room(request, pk):
+    room = Room.objects.get(id=pk)
+    context = {'room': room}
+    return render(request, 'studyapp/room.html', context)
