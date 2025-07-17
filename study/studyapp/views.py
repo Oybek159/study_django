@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import Room, Topic
+from .models import Room, Topic, Message
 from .forms import RoomForm
 from django.db.models import Q
 from django.contrib import messages
@@ -69,16 +69,30 @@ def home(request):
     q = request.GET.get('q') if request.GET.get('q') != None else ''
     rooms = Room.objects.filter(Q(topic__name__icontains=q) |
                                 Q(name__icontains=q) |
-                                Q(descrioption__icontains=q) |
+                                Q(description__icontains=q) |
                                 Q(host__username__icontains=q))
     room_count = rooms.count()
     topics = Topic.objects.all()
-    context = {'rooms': rooms, 'topics': topics, 'room_count': room_count}
+    room_messages = Message.objects.filter(Q(room__topic__name__icontains=q))
+    context = {'rooms': rooms, 'topics': topics, 'room_count': room_count, 'room_messages': room_messages}
     return render(request, 'studyapp/home.html', context)
 
 def room(request, pk):
     room = Room.objects.get(id=pk)
-    context = {'room': room}
+    room_messages = room.message_set.all()
+    participants = room.participants.all()
+
+    if request.method == 'POST':
+        message = Message.objects.create(
+            user=request.user,
+            room=room,
+            body=request.POST.get('body')
+        )
+        room.participants.add(request.user)
+        return redirect('room', pk=room.id)
+        
+
+    context = {'room': room, 'room_messages': room_messages, 'participants': participants}
     return render(request, 'studyapp/room.html', context)
 
 @login_required(login_url='login')
@@ -119,3 +133,15 @@ def deleteroom(request, pk):
         room.delete()
         return redirect('home')
     return render(request, 'studyapp/delete.html', {'obj': room})
+
+@login_required(login_url='login')
+def deleteMessage(request, pk):
+    message = Message.objects.get(id=pk)
+
+    if request.user != message.user:
+        return HttpResponse("You're not allowed here!")
+    
+    if request.method == 'POST':
+        message.delete()
+        return redirect('home')
+    return render(request, 'studyapp/delete.html', {'obj': message})
