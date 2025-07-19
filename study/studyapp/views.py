@@ -114,7 +114,7 @@ def createroom(request):
             room.save()
             return redirect('home')
     context = {'form': form}
-    return render(request, 'studyapp/room_form.html', context)
+    return render(request, 'studyapp/create_room.html', context)
 
 @login_required(login_url='login')
 def updateroom(request, pk):
