@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from .models import Room, Topic, Message
-from .forms import RoomForm
+from .forms import RoomForm, UserForm
 from django.db.models import Q
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
@@ -156,6 +156,7 @@ def deleteroom(request, pk):
 
 @login_required(login_url='login')
 def deleteMessage(request, pk):
+
     message = Message.objects.get(id=pk)
 
     if request.user != message.user:
@@ -165,3 +166,15 @@ def deleteMessage(request, pk):
         message.delete()
         return redirect('home')
     return render(request, 'studyapp/delete.html', {'obj': message})
+
+@login_required(login_url='login')
+def updateUser(request):
+    user = request.user
+    form = UserForm(instance=user)
+
+    if request.method == "POST":
+        form = UserForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('user-profile', pk=user.id)
+    return render(request, 'studyapp/update_user.html', {'form': form})
