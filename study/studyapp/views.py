@@ -19,6 +19,7 @@ from django.contrib.auth.forms import UserCreationForm
 def login_page(request):
 
     page = 'login'
+    users = User.objects.all()
 
     if request.user.is_authenticated:
         return redirect('home')
@@ -40,8 +41,8 @@ def login_page(request):
         else:
             messages.error(request, 'Username or password is incorrect')
 
-    context = {'page': page}
-    return render(request, 'studyapp/login_register.html', context)
+    context = {'page': page, 'users': users}
+    return render(request, 'studyapp/login.html', context)
 
 def logout_user(request):
     logout(request)
@@ -61,7 +62,7 @@ def register_user(request):
         else:
             messages.error(request, 'An error occurred during registration')
 
-    return render(request, 'studyapp/login_register.html', {'form': form})
+    return render(request, 'studyapp/signup.html', {'form': form})
 
     
 
